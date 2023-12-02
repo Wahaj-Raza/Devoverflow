@@ -2,7 +2,7 @@ import React from "react";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Metadata } from "next";
-// import { ThemeProvider } from "@/context/ThemeProvider";
+import { ThemeProvider } from "@/context/ThemeProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,7 +39,10 @@ export default function RootLayout({
               footerActionLink: "primary-test-gradient hover:test-primary-500",
             },
           }}
-        ></ClerkProvider>
+        >
+          {children}
+          {/* <ThemeProvider>{children}</ThemeProvider> */}
+        </ClerkProvider>
       </body>
     </html>
   );
