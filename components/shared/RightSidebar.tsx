@@ -4,18 +4,18 @@ import Image from "next/image";
 import RenderTag from "./RenderTag";
 const RightSidebar = () => {
   const hotQuestions = [
-    { _id: 1, title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: 2, title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: 3, title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: 4, title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: 5, title: "How do i use express as a custom  server in NEXTJS" },
+    { _id: "1", title: "How do i use express as a custom  server in NEXTJS" },
+    { _id: "2", title: "How do i use express as a custom  server in NEXTJS" },
+    { _id: "3", title: "How do i use express as a custom  server in NEXTJS" },
+    { _id: "4", title: "How do i use express as a custom  server in NEXTJS" },
+    { _id: "5", title: "How do i use express as a custom  server in NEXTJS" },
   ];
   const popularTags = [
-    { _id: 1, name: "javascript", totalQuestions: 5 },
-    { _id: 2, name: "react", totalQuestions: 10 },
-    { _id: 3, name: "next", totalQuestions: 5 },
-    { _id: 4, name: "vue", totalQuestions: 4 },
-    { _id: 5, name: "redux", totalQuestions: 1 },
+    { _id: "1", name: "javascript", totalQuestions: 5 },
+    { _id: "2", name: "react", totalQuestions: 10 },
+    { _id: "3", name: "next", totalQuestions: 5 },
+    { _id: "4", name: "vue", totalQuestions: 4 },
+    { _id: "5", name: "redux", totalQuestions: 1 },
   ];
   return (
     <section
