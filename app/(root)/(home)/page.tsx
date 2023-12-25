@@ -5,46 +5,12 @@ import NoResult from "@/components/shared/NoResult";
 import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { Button } from "@/components/ui/button";
 import { HomePageFilters } from "@/constants/filters";
+import { getQuestions } from "@/lib/actions/question.action";
 import Link from "next/link";
 
-const questions = [
-  {
-    _id: "1",
-    title: "Cascading deletes in SQL Alchemy?",
-    tags: [
-      { _id: "1", name: "python" },
-      { _id: "2", name: "sql" },
-    ],
-    author: {
-      _id: "1",
-      name: "John Doe",
-      picture: "url_to_picture",
-    },
-    upvotes: 10,
-    views: 100,
-    answers: [],
-    createdAt: new Date("2021-07-12T14:00:00.000Z"),
-  },
-  {
-    _id: "2",
-    title: "How to center a div?",
-    tags: [
-      { _id: "1", name: "css" },
-      { _id: "2", name: "html" },
-    ],
-    author: {
-      _id: "2",
-      name: "John Doe",
-      picture: "url_to_picture",
-    },
-    upvotes: 1500,
-    views: 10000000,
-    answers: [],
-    createdAt: new Date("2021-07-12T14:30:00.000Z"),
-  },
-  // Add more questions as needed
-];
-export default function Home() {
+export default async function Home() {
+  const result = await getQuestions({});
+  console.log(result.questions);
   return (
     <>
       <div className="flex w-full flex-col-reverse justify-between sm:flex-row sm:items-center">
@@ -71,8 +37,8 @@ export default function Home() {
       </div>
       <HomeFilters />
       <div className="mt-10 flex w-full flex-col gap-6">
-        {questions.length > 0 ? (
-          questions.map((question) => (
+        {result.questions.length > 0 ? (
+          result.questions.map((question) => (
             <QuestionCard
               key={question._id}
               _id={question._id}
