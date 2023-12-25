@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React from "react";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -40,8 +41,7 @@ export default function RootLayout({
             },
           }}
         >
-          {children}
-          {/* <ThemeProvider>{children}</ThemeProvider> */}
+          <ThemeProvider>{children}</ThemeProvider>
         </ClerkProvider>
       </body>
     </html>
