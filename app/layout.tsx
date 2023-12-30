@@ -5,7 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Metadata } from "next";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import "./globals.css";
-
+import "../styles/prism.css";
 const inter = Inter({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
