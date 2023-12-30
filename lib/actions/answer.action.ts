@@ -2,7 +2,11 @@
 
 import Answer from "@/database/answer.model";
 import { connectToDatabase } from "../mongoose";
-import { CreateAnswerParams, GetAnswersParams } from "./shared.types";
+import {
+  AnswerVoteParams,
+  CreateAnswerParams,
+  GetAnswersParams,
+} from "./shared.types";
 import Question from "@/database/question.model";
 import { revalidatePath } from "next/cache";
 
@@ -39,6 +43,92 @@ export async function getAnswers(params: GetAnswersParams) {
     return { answers };
   } catch (error) {
     console.error(error);
+    throw error;
+  }
+}
+
+export async function upvoteAnswer(params: AnswerVoteParams) {
+  try {
+    connectToDatabase();
+
+    const { answerId, userId, hasupVoted, hasdownVoted, path } = params;
+
+    let updateQuery = {};
+
+    if (hasupVoted) {
+      updateQuery = { $pull: { upvotes: userId } };
+    } else if (hasdownVoted) {
+      updateQuery = {
+        $pull: { downvotes: userId },
+        $push: { upvotes: userId },
+      };
+    } else {
+      updateQuery = { $addToSet: { upvotes: userId } };
+    }
+
+    const answer = await Answer.findByIdAndUpdate(answerId, updateQuery, {
+      new: true,
+    });
+
+    if (!answer) {
+      throw new Error(`❌ Answer not found ❌`);
+    }
+
+    // Increment author's reputation
+    // await User.findByIdAndUpdate(userId, {
+    //   $inc: { reputation: hasupVoted ? -2 : 2 },
+    // });
+
+    // await User.findByIdAndUpdate(answer.author, {
+    //   $inc: { reputation: hasupVoted ? -10 : 10 },
+    // });
+
+    revalidatePath(path);
+  } catch (error) {
+    console.error(`❌ ${error} ❌`);
+    throw error;
+  }
+}
+
+export async function downvoteAnswer(params: AnswerVoteParams) {
+  try {
+    connectToDatabase();
+
+    const { answerId, userId, hasupVoted, hasdownVoted, path } = params;
+
+    let updateQuery = {};
+
+    if (hasdownVoted) {
+      updateQuery = { $pull: { downvoteAnswer: userId } };
+    } else if (hasupVoted) {
+      updateQuery = {
+        $pull: { upvotes: userId },
+        $push: { downvotes: userId },
+      };
+    } else {
+      updateQuery = { $addToSet: { downvotes: userId } };
+    }
+
+    const answer = await Answer.findByIdAndUpdate(answerId, updateQuery, {
+      new: true,
+    });
+
+    if (!answer) {
+      throw new Error(`❌ Answer not found ❌`);
+    }
+
+    // Decrement author's reputation
+    // await User.findByIdAndUpdate(userId, {
+    //   $inc: { reputation: hasdownVoted ? -2 : 2 },
+    // });
+
+    // await User.findByIdAndUpdate(answer.author, {
+    //   $inc: { reputation: hasdownVoted ? -10 : 10 },
+    // });
+
+    revalidatePath(path);
+  } catch (error) {
+    console.error(`❌ ${error} ❌`);
     throw error;
   }
 }
