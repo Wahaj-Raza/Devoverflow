@@ -2,21 +2,12 @@ import Link from "next/link";
 import React from "react";
 import Image from "next/image";
 import RenderTag from "./RenderTag";
-const RightSidebar = () => {
-  const hotQuestions = [
-    { _id: "1", title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: "2", title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: "3", title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: "4", title: "How do i use express as a custom  server in NEXTJS" },
-    { _id: "5", title: "How do i use express as a custom  server in NEXTJS" },
-  ];
-  const popularTags = [
-    { _id: "1", name: "javascript", totalQuestions: 5 },
-    { _id: "2", name: "react", totalQuestions: 10 },
-    { _id: "3", name: "next", totalQuestions: 5 },
-    { _id: "4", name: "vue", totalQuestions: 4 },
-    { _id: "5", name: "redux", totalQuestions: 1 },
-  ];
+import { getHotQuestions } from "@/lib/actions/question.action";
+import { getTopPopularTags } from "@/lib/actions/tag.actions";
+
+const RightSidebar = async () => {
+  const hotQuestions = await getHotQuestions();
+  const popularTags = await getTopPopularTags();
   return (
     <section
       className="background-light900_dark200 light-border
@@ -53,7 +44,7 @@ const RightSidebar = () => {
               key={tag._id}
               _id={tag._id}
               name={tag.name}
-              totalQuestions={tag.totalQuestions}
+              totalQuestions={tag.numberOfQuestions}
               showCount
             />
           ))}
