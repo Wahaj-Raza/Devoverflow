@@ -80,7 +80,15 @@ export async function getAllUsers(params: GetAllUsersParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, filter } = params;
+    const { searchQuery, filter, page = 1, pageSize = 10 } = params;
+
+    // for Pagination => caluclate the number of posts to skip
+    // based on the pageNumber and pageSize
+    const skipAmount = (page - 1) * pageSize;
+
+    /**
+     * Query
+     */
     const query: FilterQuery<typeof User> = {};
     if (searchQuery) {
       query.$or = [
@@ -89,6 +97,9 @@ export async function getAllUsers(params: GetAllUsersParams) {
       ];
     }
 
+    /**
+     * Filter
+     */
     let sortOption = {};
     switch (filter) {
       case "new_users":
@@ -107,14 +118,20 @@ export async function getAllUsers(params: GetAllUsersParams) {
         break;
     }
 
-    const users = await User.find(query).sort(sortOption);
-    return { users };
+    const users = await User.find(query)
+      .sort(sortOption)
+      .skip(skipAmount)
+      .limit(pageSize);
+
+    const totalUsers = await User.countDocuments(query);
+    const isNext = totalUsers > skipAmount + users.length;
+
+    return { users, isNext };
   } catch (error) {
-    console.log(error);
+    console.error(`❌ ${error} ❌`);
     throw error;
   }
 }
-
 export async function toggleSaveQuestion(params: ToggleSaveQuestionParams) {
   try {
     connectToDatabase();
@@ -156,10 +173,10 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
   try {
     connectToDatabase();
 
-    const { clerkId, searchQuery, filter, page = 1, pageSize = 20 } = params;
+    const { clerkId, searchQuery, filter, page = 1, pageSize = 1 } = params;
 
     // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
-    // const skipAmount = (page - 1) * pageSize;
+    const skipAmount = (page - 1) * pageSize;
 
     const query: FilterQuery<typeof Question> = searchQuery
       ? { title: { $regex: new RegExp(searchQuery, "i") } }
@@ -197,8 +214,8 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
       match: query,
       options: {
         sort: sortOption,
-        // skip: skipAmount,
-        // limit: pageSize + 1,
+        skip: skipAmount,
+        limit: pageSize + 1,
       },
       populate: [
         { path: "tags", model: Tag, select: "_id name" },

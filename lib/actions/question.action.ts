@@ -20,7 +20,18 @@ import { FilterQuery } from "mongoose";
 export async function getQuestions(params: GetQuestionsParams) {
   try {
     connectToDatabase();
-    const { searchQuery, filter } = params;
+
+    /**
+     * Search functionality
+     */
+    const { searchQuery, filter, page = 1, pageSize = 20 } = params;
+
+    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
+    const skipAmount = (page - 1) * pageSize; // caluclate the number of posts to skip based on the pageNumber and pageSize
+
+    /**
+     * Query
+     */
     const query: FilterQuery<typeof Question> = {};
     if (searchQuery) {
       query.$or = [
@@ -28,6 +39,10 @@ export async function getQuestions(params: GetQuestionsParams) {
         { content: { $regex: new RegExp(searchQuery, "i") } },
       ];
     }
+
+    /**
+     * Sorting
+     */
     let sortOptions = {};
     switch (filter) {
       case "newest":
@@ -45,14 +60,32 @@ export async function getQuestions(params: GetQuestionsParams) {
       default:
         break;
     }
+
+    /**
+     * Populating
+     */
     const questions = await Question.find(query)
-      .populate({ path: "tags", model: Tag })
-      .populate({ path: "author", model: User })
+      .populate({
+        path: "tags",
+        model: Tag,
+      })
+      .populate({
+        path: "author",
+        model: User,
+      })
+      .skip(skipAmount)
+      .limit(pageSize)
       .sort(sortOptions);
 
-    return { questions };
+    /**
+     * Pagination
+     */
+    const totalQuestions = await Question.countDocuments(query);
+    const isNext = totalQuestions > skipAmount + questions.length;
+
+    return { questions, isNext };
   } catch (error) {
-    console.log(error);
+    console.error(`❌ ${error} ❌`);
     throw error;
   }
 }
