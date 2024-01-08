@@ -10,7 +10,6 @@ import {
 import Tag, { ITag } from "@/database/tag.model";
 import { FilterQuery } from "mongoose";
 import Question from "@/database/question.model";
-import { Filter } from "lucide-react";
 
 export async function getTopInteractedTags(params: GetTopInteractedTagsParams) {
   try {
@@ -34,14 +33,37 @@ export async function getTopInteractedTags(params: GetTopInteractedTagsParams) {
 export async function getAllTags(params: GetAllTagsParams) {
   try {
     connectToDatabase();
-    const { searchQuery } = params;
+    const { filter, searchQuery } = params;
 
     const query: FilterQuery<typeof Tag> = {};
     if (searchQuery) {
       query.$or = [{ name: { $regex: new RegExp(searchQuery, "i") } }];
     }
+    let sortOptions = {};
+    switch (filter) {
+      case "popular":
+        sortOptions = { questions: -1 };
+        break;
 
-    const tags = await Tag.find(query);
+      case "recent":
+        sortOptions = { createdOn: -1 };
+        break;
+
+      case "name":
+        sortOptions = { name: 1 };
+        break;
+
+      case "old":
+        sortOptions = { createdOn: 1 };
+        break;
+
+      default:
+        break;
+    }
+
+    const tags = await Tag.find(query).sort(sortOptions);
+    // .skip(skipAmount)
+    // .limit(pageSize);
 
     return { tags };
   } catch (error) {
