@@ -120,13 +120,27 @@ export async function createQuestion(params: CreateQuestionParams) {
       $push: { tags: { $each: tagDocuments } },
     });
 
-    // Create an interaction record for the user's ask_question action
+    await Interaction.create({
+      user: author,
+      action: "ask_question",
+      question: question._id,
+      tags: tagDocuments,
+    });
 
-    // Increment author's reputation by +5 for creating a question
+    /**
+     * Increment author's reputation by +5 points because
+     * he created a question
+     */
+    await User.findByIdAndUpdate(author, { $inc: { reputation: 5 } });
 
+    // revalidatePath allows you to purge cached data on-demand for a specific path.
     revalidatePath(path);
-  } catch (error) {}
+  } catch (error) {
+    console.error(`❌ ${error} ❌`);
+    throw error;
+  }
 }
+
 export async function getQuestionById(params: GetQuestionByIdParams) {
   try {
     connectToDatabase();
@@ -179,15 +193,15 @@ export async function upvoteQuestion(params: QuestionVoteParams) {
     // Increment author's reputation by +1/-1 for
     // upvoting/revoking an upvote to the question
 
-    // await User.findByIdAndUpdate(userId, {
-    //   $inc: { reputation: hasupVoted ? -1 : 1 },
-    // });
+    await User.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasupVoted ? -1 : 1 },
+    });
 
     // // Increment author's reputation by +10/-10 for
     // // recieving an upvote/downvote to the question
-    // await User.findByIdAndUpdate(question.author, {
-    //   $inc: { reputation: hasupVoted ? -10 : 10 },
-    // });
+    await User.findByIdAndUpdate(question.author, {
+      $inc: { reputation: hasupVoted ? -10 : 10 },
+    });
 
     revalidatePath(path);
   } catch (error) {
@@ -225,13 +239,13 @@ export async function downvoteQuestion(params: QuestionVoteParams) {
 
     // Decrement author's reputation
 
-    // await User.findByIdAndUpdate(userId, {
-    //   $inc: { reputation: hasdownVoted ? -2 : 2 },
-    // });
+    await User.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasdownVoted ? -2 : 2 },
+    });
 
-    // await User.findByIdAndUpdate(question.author, {
-    //   $inc: { reputation: hasdownVoted ? -10 : 10 },
-    // });
+    await User.findByIdAndUpdate(question.author, {
+      $inc: { reputation: hasdownVoted ? -10 : 10 },
+    });
 
     revalidatePath(path);
   } catch (error) {
