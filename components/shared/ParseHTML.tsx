@@ -1,7 +1,11 @@
 "use client";
+
 import React, { useEffect } from "react";
+
 import Prism from "prismjs";
 import parse from "html-react-parser";
+
+// Prism languages
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-c";
@@ -34,7 +38,7 @@ const ParseHTML = ({ data }: Props) => {
     Prism.highlightAll();
   }, []);
 
-  return <div>{parse(data)}</div>;
+  return <div className="markdown w-full min-w-full">{parse(data)}</div>;
 };
 
 export default ParseHTML;

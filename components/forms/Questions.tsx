@@ -1,9 +1,10 @@
 "use client";
+
 import React, { useRef, useState } from "react";
 import { Editor } from "@tinymce/tinymce-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -14,13 +15,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { QuestionsSchema } from "@/lib/validations";
-import { Badge } from "../ui/badge";
+import { useTheme } from "@/context/ThemeProvider";
 import Image from "next/image";
 import { createQuestion, editQuestion } from "@/lib/actions/question.action";
 import { useRouter, usePathname } from "next/navigation";
-import { useTheme } from "@/context/ThemeProvider";
 
 interface Props {
   type?: string;
@@ -29,17 +30,24 @@ interface Props {
 }
 
 const Question = ({ type, mongoUserId, questionDetails }: Props) => {
-  const mode = useTheme();
+  // Text Editor ref
   const editorRef = useRef(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Router
   const router = useRouter();
   const pathname = usePathname();
 
+  // For editor dark and light mode
+  const { mode } = useTheme();
+
+  // In edit mode data will be shown by default
   const parsedQuestionDetails =
     questionDetails && JSON.parse(questionDetails || "");
   const groupedTags = parsedQuestionDetails?.tags.map((tag: any) => tag.name);
 
-  // 1. Define your form.
+  // Define form.
   const form = useForm<z.infer<typeof QuestionsSchema>>({
     resolver: zodResolver(QuestionsSchema),
     defaultValues: {
@@ -49,20 +57,27 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
     },
   });
 
-  // 2. Define a submit handler.
+  // Submit form handler
   async function onSubmit(values: z.infer<typeof QuestionsSchema>) {
     setIsSubmitting(true);
 
     try {
-      if (type === "Edit") {
+      if (type === "edit") {
+        /**
+         * Edit a question
+         */
         await editQuestion({
-          questionId: parsedQuestionDetails._id,
+          questionId: parsedQuestionDetails?._id,
           title: values.title,
           content: values.explanation,
           path: pathname,
         });
+        // navigate to the question detail page
         router.push(`/question/${parsedQuestionDetails._id}`);
       } else {
+        /**
+         * Cretate a new Question
+         */
         await createQuestion({
           title: values.title,
           content: values.explanation,
@@ -70,6 +85,8 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
           author: JSON.parse(mongoUserId),
           path: pathname,
         });
+
+        // navigate to home page
         router.push("/");
       }
     } catch (error) {
@@ -78,6 +95,14 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
     }
   }
 
+  /**
+   * Handles 'Enter' key events for adding tags to a form field.
+   * Triggers tag addition, validation, or form submission.
+   *
+   * @param {React.KeyboardEvent<HTMLInputElement>} e - The keyboard event.
+   * @param {any} field - The field to which this function is associated.
+   *
+   */
   const handleInputKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     field: any
@@ -86,16 +111,18 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
       e.preventDefault();
 
       const tagInput = e.target as HTMLInputElement;
-      const tagValue = tagInput.value.trim();
+      const tagValue = tagInput.value.trim(); // Remove the leading and trailing white space
 
       if (tagValue !== "") {
+        // Error in tag input when the value is > 15 characters
         if (tagValue.length > 15) {
           return form.setError("tags", {
             type: "required",
-            message: "Tag must be less than 15 characters.",
+            message: "Tag must be less than 15 characters",
           });
         }
 
+        // Check if the tag exist already within the fields
         if (!field.value.includes(tagValue as never)) {
           form.setValue("tags", [...field.value, tagValue]);
           tagInput.value = "";
@@ -107,6 +134,10 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
     }
   };
 
+  /**
+   * Function to remove tags from tag list
+   *
+   */
   const handleTagRemove = (tag: string, field: any) => {
     const newTags = field.value.filter((t: string) => t !== tag);
 
@@ -119,6 +150,7 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex w-full flex-col gap-10"
       >
+        {/* Title */}
         <FormField
           control={form.control}
           name="title"
@@ -134,22 +166,26 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
                 />
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
-                Be specific and imagine you&apos;re asking a question to another
+                Be specific and imagine you&apos;re asking question to another
                 person.
               </FormDescription>
               <FormMessage className="text-red-500" />
             </FormItem>
           )}
         />
+
+        {/* Explanation */}
         <FormField
           control={form.control}
           name="explanation"
           render={({ field }) => (
             <FormItem className="flex w-full flex-col gap-3">
               <FormLabel className="paragraph-semibold text-dark400_light800">
-                Detailed explanation of your problem{" "}
+                Detailed explanation of your problem.
                 <span className="text-primary-500">*</span>
               </FormLabel>
+
+              {/* Text Editor from https://www.tiny.cloud/ */}
               <FormControl className="mt-3.5">
                 <Editor
                   apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_API_KEY}
@@ -184,12 +220,14 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
                       "undo redo | " +
                       "codesample | bold italic forecolor | alignleft aligncenter |" +
                       "alignright alignjustify | bullist numlist",
-                    content_style: "body { font-family:Inter; font-size:16px }",
+                    content_style:
+                      "body { font-family:Inter,sans-serif; font-size:16px }",
                     skin: mode === "dark" ? "oxide-dark" : "oxide",
-                    content_css: mode === "dark" ? "dark" : "light",
+                    content_css: mode === "dark" && "dark",
                   }}
                 />
               </FormControl>
+
               <FormDescription className="body-regular mt-2.5 text-light-500">
                 Introduce the problem and expand on what you put in the title.
                 Minimum 20 characters.
@@ -198,47 +236,49 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
             </FormItem>
           )}
         />
+
+        {/* Tags */}
         <FormField
           control={form.control}
           name="tags"
           render={({ field }) => (
             <FormItem className="flex w-full flex-col">
               <FormLabel className="paragraph-semibold text-dark400_light800">
-                Tags <span className="text-primary-500">*</span>
+                Tags<span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl className="mt-3.5">
+                {/* Fragment because the FormControl can contain only one element */}
                 <>
                   <Input
-                    disabled={type === "Edit"}
+                    disabled={type === "edit"}
                     className="no-focus paragraph-regular background-light900_dark300 light-border-2 text-dark300_light700 min-h-[56px] border"
                     placeholder="Add tags..."
                     onKeyDown={(e) => handleInputKeyDown(e, field)}
                   />
 
+                  {/* Tags added by the user */}
                   {field.value.length > 0 && (
                     <div className="flex-start mt-2.5 gap-2.5">
-                      {field.value.map((tag: any) => (
-                        <Badge
-                          key={tag}
-                          className="subtle-medium background-light800_dark300 text-light400_light500 flex items-center justify-center gap-2 rounded-md border-none px-4 py-2 capitalize"
-                          onClick={() =>
-                            type !== "Edit"
-                              ? handleTagRemove(tag, field)
-                              : () => {}
-                          }
-                        >
-                          {tag}
-                          {type !== "Edit" && (
-                            <Image
-                              src="/assets/icons/close.svg"
-                              alt="Close icon"
-                              width={12}
-                              height={12}
-                              className="cursor-pointer object-contain invert-0 dark:invert"
-                            />
-                          )}
-                        </Badge>
-                      ))}
+                      {field.value.map((tag: any) => {
+                        return (
+                          <Badge
+                            key={tag}
+                            className="subtle-medium background-light800_dark300 text-light400_light500 flex items-center justify-center gap-2 rounded-md border-none px-4 py-2 uppercase"
+                          >
+                            {tag}
+                            {type !== "edit" && (
+                              <Image
+                                src="/assets/icons/close.svg"
+                                alt="close icon"
+                                width={12}
+                                height={12}
+                                className="cursor-pointer object-contain invert-0 dark:invert"
+                                onClick={() => handleTagRemove(tag, field)}
+                              />
+                            )}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   )}
                 </>
@@ -257,9 +297,9 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <>{type === "Edit" ? "Editing..." : "Posting..."}</>
+            <>{type === "edit" ? "Editing..." : "Posting..."}</>
           ) : (
-            <>{type === "Edit" ? "Edit Question" : "Ask a Question"}</>
+            <>{type === "edit" ? "Edit Question" : "Ask a Questioin"}</>
           )}
         </Button>
       </form>
