@@ -2,6 +2,7 @@ import Navbar from "@/components/shared/navbar/Navbar";
 import React from "react";
 import LeftSidebar from "@/components/shared/LeftSidebar";
 import RightSideBar from "@/components/shared/RightSidebar";
+import { Toaster } from "@/components/ui/toaster";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <main className="background-light850_dark100 relative">
@@ -13,7 +14,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </section>
         <RightSideBar />
       </div>
-      Toaster
+      <Toaster />
     </main>
   );
 };

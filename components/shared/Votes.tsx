@@ -11,6 +11,7 @@ import { formatLargeNumber } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { toast } from "../ui/use-toast";
 
 interface Props {
   type: string;
@@ -37,35 +38,33 @@ const Votes = ({
   const router = useRouter();
 
   const handleSave = async () => {
-    // if (!userId) {
-    //   return toast({
-    //     title: "Please log in",
-    //     description: "You must be logged in to perform this action",
-    //   });
-    //   };
+    if (!userId) {
+      return toast({
+        title: "Please log in",
+        description: "You must be logged in to perform this action",
+      });
+    }
 
     await toggleSaveQuestion({
       userId: JSON.parse(userId),
       questionId: JSON.parse(itemId),
       path: pathname,
     });
-  };
 
-  //     return toast({
-  //       title: `Question ${
-  //         !hasSaved ? "saved in" : "removed from"
-  //       } your collection`,
-  //       variant: !hasSaved ? "default" : "destructive",
-  //     });
-  //   };
+    return toast({
+      title: `Question ${
+        !hasSaved ? "saved in" : "removed from"
+      } your collection`,
+      variant: !hasSaved ? "default" : "destructive",
+    });
+  };
 
   const handleVote = async (action: string) => {
     if (!userId) {
-      return;
-      //   return toast({
-      //     title: "Please log in",
-      //     description: "You must be logged in to perform this action",
-      //   });
+      return toast({
+        title: "Please log in",
+        description: "You must be logged in to perform this action",
+      });
     }
 
     if (action === "upvote") {
@@ -87,10 +86,10 @@ const Votes = ({
         });
       }
 
-      //   return toast({
-      //     title: `Upvote ${!hasupVoted ? "Successful" : "Removed"}`,
-      //     variant: !hasupVoted ? "default" : "destructive",
-      //   });
+      return toast({
+        title: `Upvote ${!hasupVoted ? "Successful" : "Removed"}`,
+        variant: !hasupVoted ? "default" : "destructive",
+      });
     }
 
     if (action === "downvote") {
@@ -112,10 +111,10 @@ const Votes = ({
         });
       }
 
-      //   return toast({
-      //     title: `Downvote ${!hasdownVoted ? "Successful" : "Removed"}`,
-      //     variant: !hasdownVoted ? "default" : "destructive",
-      //   });
+      return toast({
+        title: `Downvote ${!hasdownVoted ? "Successful" : "Removed"}`,
+        variant: !hasdownVoted ? "default" : "destructive",
+      });
     }
   };
 

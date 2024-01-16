@@ -18,7 +18,7 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { createAnswer } from "@/lib/actions/answer.action";
 import { usePathname } from "next/navigation";
-// import { toast } from "../ui/use-toast";
+import { toast } from "../ui/use-toast";
 
 interface Props {
   question: string;
@@ -81,11 +81,10 @@ const Answer = ({ question, questionId, authorId }: Props) => {
   const generateAIAnswer = async () => {
     console.log("Generating AI Answer...");
     if (!authorId) {
-      return;
-      // toast({
-      //   title: "Please log in",
-      //   description: "You must be logged in to perform this action",
-      // });
+      return toast({
+        title: "Please log in",
+        description: "You must be logged in to perform this action",
+      });
     }
 
     setIsSubmittingAI(true);
