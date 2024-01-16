@@ -22,7 +22,7 @@ export async function viewQuestion(params: ViewQuestionParams) {
       });
 
       if (existingInteraction) {
-        console.log("👁️‍🗨️ User has already viewed this question 👁️‍🗨️");
+        // console.log("👁️‍🗨️ User has already viewed this question 👁️‍🗨️");
         return;
       }
 
