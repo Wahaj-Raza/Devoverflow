@@ -79,7 +79,6 @@ const Answer = ({ question, questionId, authorId }: Props) => {
    *
    */
   const generateAIAnswer = async () => {
-    console.log("Generating AI Answer...");
     if (!authorId) {
       return toast({
         title: "Please log in",
@@ -99,13 +98,13 @@ const Answer = ({ question, questionId, authorId }: Props) => {
       );
 
       const aiAnswer = await response.json();
-
+      // alert(response);
       // Convert plain text to HTML format
-      const formattedAnswer = aiAnswer.reply.replace(/\n/g, "<br />");
+      const formattedAnswert = aiAnswer.reply.replace(/\n/g, "<br />");
 
       if (editorRef.current) {
         const editor = editorRef.current as any;
-        editor.setContent(formattedAnswer);
+        editor.setContent(formattedAnswert);
       }
 
       // Toast notification
